@@ -1,12 +1,22 @@
+// package.json
 {
-    "name": "sooka-proxy",
-    "version": "1.0.0",
-    "description": "Proxy script for fetching Sooka stream data",
-    "type": "module",
-    "dependencies": {
-        "axios": "^1.4.0"
-    },
-    "engines": {
-        "node": "18.x"
-    }
+  "name": "sooka-mpd-proxy",
+  "version": "1.0.0",
+  "description": "A proxy to fetch sooka mpd",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "nodemon api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "axios": "^0.21.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.9"
+  },
+  "engines": {
+    "node": "18.x"
+  }
 }
