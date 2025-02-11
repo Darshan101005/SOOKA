@@ -1,7 +1,7 @@
+// api/index.js
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const { URL } = require('url');
 
 const app = express();
 
@@ -10,15 +10,19 @@ app.use(cors());
 app.get('/api/proxy/*', async (req, res) => {
     try {
         const encodedUrl = req.url.substring('/api/proxy/'.length);
+        console.log("Encoded URL:", encodedUrl); // Debugging
 
         let url;
         try {
             url = decodeURIComponent(encodedUrl);
+            console.log("Decoded URL:", url); // Debugging
         } catch (e) {
-            return res.status(400).json({ error: "Invalid URL encoding" });
+            console.error("Decoding error:", e);
+            return res.status(400).json({ error: "Invalid URL encoding", details: e.message });
         }
 
         if (!url.startsWith('https://')) {
+            console.log("URL does not start with https:", url); // Debugging
             return res.status(400).json({ error: "Only full URLs starting with 'https://' are supported." });
         }
 
@@ -50,7 +54,7 @@ app.get('/api/proxy/*', async (req, res) => {
         response.data.pipe(res);
 
     } catch (error) {
-        console.error(error);
+        console.error("Proxy error:", error);
         if (error.response) {
             res.status(error.response.status).send(error.response.statusText);
         } else {
