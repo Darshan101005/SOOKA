@@ -8,7 +8,7 @@
   ],
   "routes": [
     {
-      "src": "/api/mpd",
+      "src": "/api/proxy/(.*)",
       "dest": "/api/index.js"
     }
   ]
