@@ -1,7 +1,7 @@
 {
-  "name": "sooka-mpd-proxy",
+  "name": "sooka-proxy",
   "version": "1.0.0",
-  "description": "A proxy to fetch sooka mpd",
+  "description": "A proxy for sooka requests",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
@@ -15,7 +15,7 @@
   "devDependencies": {
     "nodemon": "^2.0.9"
   },
-  "engines": {
+    "engines": {
     "node": "18.x"
   }
 }
