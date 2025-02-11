@@ -1,29 +1,22 @@
-// api/index.js
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
-
 app.use(cors());
 
 app.get('/api/proxy/*', async (req, res) => {
     try {
-        const encodedUrl = req.url.substring('/api/proxy/'.length);
+        const encodedUrl = req.params[0]; // Extracts everything after '/api/proxy/'
         console.log("Encoded URL:", encodedUrl); // Debugging
 
         let url;
         try {
-            url = decodeURIComponent(encodedUrl);
-            console.log("Decoded URL:", url); // Debugging
+            url = `https://${decodeURIComponent(encodedUrl)}`; // Prepend https:// and decode
+            console.log("Final URL:", url); // Debugging
         } catch (e) {
             console.error("Decoding error:", e);
             return res.status(400).json({ error: "Invalid URL encoding", details: e.message });
-        }
-
-        if (!url.startsWith('https://')) {
-            console.log("URL does not start with https:", url); // Debugging
-            return res.status(400).json({ error: "Only full URLs starting with 'https://' are supported." });
         }
 
         const tokenUrl = 'https://darshan.freewebhostmost.com/SOOKA/output.json';
@@ -50,7 +43,6 @@ app.get('/api/proxy/*', async (req, res) => {
         });
 
         res.setHeader('Content-Type', response.headers['content-type']);
-
         response.data.pipe(res);
 
     } catch (error) {
