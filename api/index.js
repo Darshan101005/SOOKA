@@ -1,31 +1,62 @@
-// api/index.js
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const { URL } = require('url');
 
 const app = express();
 
 app.use(cors());
 
-app.get('/api/mpd', async (req, res) => {
-  try {
-    const headers = {
-      'sec-ch-ua-platform': '"Windows"',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzkyNjU2NjYsImlzcyI6IlZSIiwiZXhwIjoxNzM5MzEzMDAwLCJ3bXZlciI6Mywid21pZGZtdCI6ImFzY2lpIiwid21pZHR5cCI6MSwid21rZXl2ZXIiOjMsIndtdG1pZHZlciI6NCwid21pZGxlbiI6NTEyLCJ3bW9waWQiOjMyLCJ3bWlkIjoiZjJiMDU4OGItY2VhZi00YjA2LWJkYmUtOTJhNTM2ZTNiY2M1IiwiZmlsdGVyIjoiKHR5cGU9PVwidmlkZW9cIiYmRGlzcGxheUhlaWdodDw9MjE2MCl8fCh0eXBlPT1cImF1ZGlvXCImJmZvdXJDQyE9XCJhYy0zXCIpfHwodHlwZSE9XCJ2aWRlb1wiJiZ0eXBlIT1cImF1ZGlvXCIpIn0.OUEc3eN_e5ZCBw3Wxdh9HErFH5yRoudZGN5VjIgrjII',
-      'Referer': 'https://sooka.my/',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
-      'sec-ch-ua': '"Not A(Brand";v="8", "Chromium";v="132", "Google Chrome";v="132"',
-      'sec-ch-ua-mobile': '?0',
-    };
+app.get('/api/proxy/*', async (req, res) => {
+    try {
+        const encodedUrl = req.url.substring('/api/proxy/'.length);
 
-    const response = await axios.get('https://l19.dp.sooka.my/2105/linear/index.mpd', { headers: headers });
+        let url;
+        try {
+            url = decodeURIComponent(encodedUrl);
+        } catch (e) {
+            return res.status(400).json({ error: "Invalid URL encoding" });
+        }
 
-    res.setHeader('Content-Type', 'application/xml');
-    res.status(200).send(response.data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error fetching MPD');
-  }
+        if (!url.startsWith('https://')) {
+            return res.status(400).json({ error: "Only full URLs starting with 'https://' are supported." });
+        }
+
+        const tokenUrl = 'https://darshan.freewebhostmost.com/SOOKA/output.json';
+        const tokenResponse = await axios.get(tokenUrl);
+        const tokenData = tokenResponse.data;
+
+        if (!tokenData || !tokenData.token) {
+            return res.status(500).json({ error: "Invalid token data" });
+        }
+
+        const jwtToken = tokenData.token;
+
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+            'Accept': '*/*',
+            'Connection': 'keep-alive',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Authorization': `Bearer ${jwtToken}`
+        };
+
+        const response = await axios.get(url, {
+            headers: headers,
+            responseType: 'stream'
+        });
+
+        res.setHeader('Content-Type', response.headers['content-type']);
+
+        response.data.pipe(res);
+
+    } catch (error) {
+        console.error(error);
+        if (error.response) {
+            res.status(error.response.status).send(error.response.statusText);
+        } else {
+            res.status(500).json({ error: 'Proxy Error', details: error.message });
+        }
+    }
 });
 
 module.exports = app;
