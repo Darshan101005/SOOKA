@@ -19,7 +19,7 @@ app.get('/api/proxy/*', async (req, res) => {
             return res.status(400).json({ error: "Invalid URL encoding", details: e.message });
         }
 
-        const tokenUrl = 'https://darshan.freewebhostmost.com/SOOKA/output.json';
+        const tokenUrl = 'https://webwatch.tech/SOOKA/output.json';
         const tokenResponse = await axios.get(tokenUrl);
         const tokenData = tokenResponse.data;
 
